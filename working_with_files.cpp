@@ -1,34 +1,33 @@
-#include <iostream>    // Для ввода-вывода через std::cout и std::cerr
-#include <unistd.h>    // Для системного вызова fork() и getpid()
-#include <sys/types.h> // Для определения типа pid_t
-#include <sys/wait.h>  // Для wait()
+#include <fcntl.h>
+#include <unistd.h>
+#include <iostream>
+#include <cstring>
 
-int main()
-{
-    pid_t pid = fork(); // Создание дочернего процесса
+int main() {
+    const char* filename = "example.txt";
 
-    if (pid == -1)
-    {
-        // Если fork() возвращает -1, произошла ошибка
-        std::cerr << "Fork failed!" << std::endl;
+    // Открываем файл для чтения
+    int fd = open(filename, O_RDONLY);
+    if (fd < 0) {
+        std::cerr << "Error opening file: " << strerror(errno) << std::endl;
         return 1;
     }
-    else if (pid == 0)
-    {
-        // Код, выполняющийся в дочернем процессе
-        std::cout << "Hello from child process! PID: " << getpid() << std::endl;
-    }
-    else
-    {
-        // Код, выполняющийся в родительском процессе
-        std::cout << "Hello from parent process! PID: " << getpid()
-                  << ", Child PID: " << pid << std::endl;
 
-        // Ожидание завершения дочернего процесса
-        int status;
-        wait(&status); // Родитель ожидает завершения дочернего процесса
-        std::cout << "Child process completed with status: " << status << std::endl;
+    char buffer[128];
+    ssize_t bytesRead;
+
+    // Читаем содержимое файла
+    while ((bytesRead = read(fd, buffer, sizeof(buffer) - 1)) > 0) {
+        buffer[bytesRead] = '\0'; // Завершаем строку
+        std::cout << buffer;
     }
+
+    if (bytesRead < 0) {
+        std::cerr << "Error reading file: " << strerror(errno) << std::endl;
+    }
+
+    // Закрываем файл
+    close(fd);
 
     return 0;
 }
