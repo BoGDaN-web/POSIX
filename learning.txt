@@ -1,0 +1,3 @@
+Работа с очередями сообщений (mq_open, mq_send, mq_receive).
+Управление общей памятью (shm_open, mmap).
+Таймеры и синхронизация (timer_create, clock_gettime).
